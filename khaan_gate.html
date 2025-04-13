@@ -1,0 +1,190 @@
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const gameText = document.getElementById('gameText');
+    const choicesDiv = document.getElementById('choices');
+
+    let player = {
+        inventory: [],
+        health: 100
+    };
+
+    const scenes = {
+        start: {
+            text: "Чи эртний Монголын талд зогсож байна. Хаанын Хаалгыг олохоор аялалд гарлаа. Урд чинь гурван зам: уул руу, тал руу, эсвэл бөөгийн сүм рүү. Хаашаа явах вэ?",
+            choices: [
+                { text: "Уул руу", next: "mountain" },
+                { text: "Тал руу", next: "steppe" },
+                { text: "Бөөгийн сүм рүү", next: "shaman" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#3c6f2f';
+                ctx.fillRect(0, 200, canvas.width, 100);
+                ctx.fillStyle = '#666';
+                ctx.fillRect(400, 50, 100, 100);
+                ctx.fillStyle = '#4a2c0d';
+                ctx.fillRect(50, 150, 50, 50);
+            }
+        },
+        mountain: {
+            text: "Уулын бэлд хүрлээ. Гэнэт чоно гарч ирлээ! Тулалдах уу, эсвэл зугтах уу?",
+            choices: [
+                { text: "Тулалдах", next: "fightWolf" },
+                { text: "Зугтах", next: "runAway" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#666';
+                ctx.fillRect(0, 100, canvas.width, 200);
+                ctx.fillStyle = '#555';
+                ctx.beginPath();
+                ctx.arc(300, 200, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        },
+        fightWolf: {
+            text: "Чоно оньсого өглөө: 'Чонын сүүл одод хүрнэ, гэхдээ түүний толгой хаана байна вэ?'",
+            choices: [
+                { text: "Умард", next: "wolfPathCorrect" },
+                { text: "Өмнөд", next: "wolfPathWrong" },
+                { text: "Зүүн", next: "wolfPathWrong" },
+                { text: "Баруун", next: "wolfPathWrong" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#666';
+                ctx.fillRect(0, 100, canvas.width, 200);
+                ctx.fillStyle = '#555';
+                ctx.beginPath();
+                ctx.arc(300, 200, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        },
+        wolfPathCorrect: {
+            text: "Зөв! Чоно Хаалгын замыг заалаа. Цааш явах уу?",
+            choices: [
+                { text: "Цааш явах", next: "findGate" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#3c6f2f';
+                ctx.fillRect(0, 150, canvas.width, 150);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(300, 150, 30, 30);
+            }
+        },
+        wolfPathWrong: {
+            text: "Буруу... Чоно чамайг дайрчихлаа. Тоглоом дууслаа.",
+            choices: [],
+            draw: () => {
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        },
+        steppe: {
+            text: "Талын дунд хуучин сумны үзүүр оллоо. Авах уу, эсвэл цааш явах уу?",
+            choices: [
+                { text: "Авах", next: "takeArrow", action: () => player.inventory.push("Сумны үзүүр") },
+                { text: "Цааш явах", next: "steppeContinue" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#3c6f2f';
+                ctx.fillRect(0, 150, canvas.width, 150);
+                ctx.fillStyle = '#000';
+                ctx.fillRect(300, 200, 20, 10);
+            }
+        },
+        steppeContinue: {
+            text: "Цааш яваад чи хадны бичээс оллоо: 'Дөрвөн хөлтэй, гэхдээ нисдэг. Хааныг хамгаалдаг, гэхдээ Хаан биш. Энэ юу вэ?'",
+            choices: [
+                { text: "Бүргэд", next: "stoneCorrect" },
+                { text: "Морь", next: "stoneWrong" },
+                { text: "Чоно", next: "stoneWrong" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#3c6f2f';
+                ctx.fillRect(0, 150, canvas.width, 150);
+                ctx.fillStyle = '#666';
+                ctx.fillRect(300, 150, 50, 50);
+            }
+        },
+        stoneCorrect: {
+            text: "Зөв! Бичээс Хаалгын байршлыг илчиллээ. Цааш явах уу?",
+            choices: [
+                { text: "Цааш явах", next: "findGate" }
+            ],
+            draw: () => {
+                ctx.fillStyle = '#8db6e0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#3c6f2f';
+                ctx.fillRect(0, 150, canvas.width, 150);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(300, 150, 30, 30);
+            }
+        },
+        stoneWrong: {
+            text: "Буруу... Хадны бичээс алга болчихлоо. Чи төөрчихлээ. Тоглоом дууслаа.",
+            choices: [],
+            draw: () => {
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        },
+        // ... Бусад сценариуд хэвээрээ ...
+    };
+
+    function startGame() {
+        player = { inventory: [], health: 100 };
+        showScene('start');
+    }
+
+    function showScene(sceneKey) {
+        const scene = scenes[sceneKey];
+        gameText.textContent = scene.text;
+        choicesDiv.innerHTML = '';
+        scene.draw();
+
+        if (scene.input) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Хариултаа энд оруул';
+            choicesDiv.appendChild(input);
+            const submit = document.createElement('button');
+            submit.textContent = 'Хариулах';
+            submit.onclick = () => {
+                if (input.value.toLowerCase() === scene.correctAnswer) {
+                    showScene(scene.nextCorrect);
+                } else {
+                    showScene(scene.nextIncorrect);
+                }
+            };
+            choicesDiv.appendChild(submit);
+        } else if (scene.choices.length === 0) {
+            const restartButton = document.createElement('button');
+            restartButton.textContent = 'Дахин эхлэх';
+            restartButton.onclick = startGame;
+            choicesDiv.appendChild(restartButton);
+        } else {
+            scene.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice.text;
+                button.onclick = () => {
+                    if (choice.action) choice.action();
+                    showScene(choice.next);
+                };
+                choicesDiv.appendChild(button);
+            });
+        }
+    }
+
+    startGame();
+</script>
